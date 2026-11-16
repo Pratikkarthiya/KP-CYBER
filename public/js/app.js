@@ -245,7 +245,8 @@ async function handleUserLogin() {
       showToast((data && data.message) || 'Login failed', 'error');
     }
   } catch (err) {
-    showToast('Network error during login', 'error');
+    console.error('Login error details:', err);
+    showToast(err.message ? ('Error: ' + err.message) : 'Network error during login', 'error');
   } finally {
     if (btn) {
       btn.disabled = false;

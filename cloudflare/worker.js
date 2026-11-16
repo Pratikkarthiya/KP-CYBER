@@ -473,7 +473,7 @@ export default {
           status: 200,
           headers: {
             'Content-Type': contentType,
-            'Cache-Control': 'public, max-age=60',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Access-Control-Allow-Origin': '*',
           },
         });
