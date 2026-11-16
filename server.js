@@ -263,6 +263,60 @@ app.post('/api/auth/verify-otp', (req, res) => {
   }
 });
 
+// Direct User Login (No OTP required)
+app.post('/api/auth/direct-login', (req, res) => {
+  try {
+    const { phone, name } = req.body;
+    if (!phone || phone.length < 10) {
+      return res.status(400).json({ success: false, message: 'Valid 10-digit mobile number required.' });
+    }
+
+    const cleanPhone = phone.replace(/[^0-9]/g, '').slice(-10);
+    let user = db.prepare('SELECT * FROM users WHERE phone = ?').get(cleanPhone);
+
+    if (!user) {
+      const defaultRateSetting = db.prepare("SELECT value FROM system_settings WHERE key = 'default_rate'").get();
+      const defaultRate = defaultRateSetting ? parseFloat(defaultRateSetting.value) : 50.00;
+      const userName = (name && name.trim()) ? name.trim() : `Customer ${cleanPhone.slice(-4)}`;
+
+      const info = db.prepare(`
+        INSERT INTO users (phone, name, status, rate, wallet_balance, approved_at)
+        VALUES (?, ?, 'APPROVED', ?, 0.00, CURRENT_TIMESTAMP)
+      `).run(cleanPhone, userName, defaultRate);
+
+      user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+    }
+
+    if (user.status === 'BLOCKED') {
+      return res.status(403).json({ success: false, message: 'Your account has been suspended by administration.' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, phone: user.phone, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      success: true,
+      message: `Welcome back, ${user.name}!`,
+      token,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        name: user.name,
+        role: user.role,
+        status: user.status,
+        rate: user.rate,
+        wallet_balance: user.wallet_balance
+      }
+    });
+  } catch (err) {
+    console.error('Direct login error:', err);
+    res.status(500).json({ success: false, message: 'Server error during login.' });
+  }
+});
+
 // Admin Password Login
 app.post('/api/auth/admin-login', (req, res) => {
   try {

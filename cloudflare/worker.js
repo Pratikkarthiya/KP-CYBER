@@ -239,6 +239,44 @@ export default {
         });
       }
 
+      // 5B. POST /api/auth/direct-login (No OTP required)
+      if (url.pathname === '/api/auth/direct-login' && request.method === 'POST') {
+        const { phone, name } = await request.json();
+        if (!phone || phone.length < 10) {
+          return jsonRes({ success: false, message: 'Valid 10-digit mobile number required.' }, 400);
+        }
+
+        const cleanPhone = phone.replace(/[^0-9]/g, '').slice(-10);
+        let user = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(cleanPhone).first();
+
+        if (!user) {
+          const userName = (name && name.trim()) ? name.trim() : `Customer ${cleanPhone.slice(-4)}`;
+          await db.prepare('INSERT INTO users (phone, name, status, rate, wallet_balance, approved_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)')
+            .bind(cleanPhone, userName, 'APPROVED', 50.0, 0.0).run();
+          user = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(cleanPhone).first();
+        }
+
+        if (user.status === 'BLOCKED') {
+          return jsonRes({ success: false, message: 'Your account has been suspended by administration.' }, 403);
+        }
+
+        const token = await signJWT({ id: user.id, phone: user.phone, role: user.role });
+        return jsonRes({
+          success: true,
+          message: `Welcome, ${user.name}!`,
+          token,
+          user: {
+            id: user.id,
+            phone: user.phone,
+            name: user.name,
+            role: user.role,
+            status: user.status,
+            rate: user.rate,
+            wallet_balance: user.wallet_balance || 0,
+          },
+        });
+      }
+
       // 6. POST /api/submissions/create
       if (url.pathname === '/api/submissions/create' && request.method === 'POST') {
         const user = await getUserFromRequest(request, db);

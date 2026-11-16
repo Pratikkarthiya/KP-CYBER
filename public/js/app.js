@@ -172,9 +172,64 @@ function fillDemoAdmin() {
 }
 
 function resetOTPForm() {
-  document.getElementById('auth-step-phone').classList.remove('hidden');
-  document.getElementById('auth-step-otp').classList.add('hidden');
-  document.getElementById('auth-otp-input').value = '';
+  if (document.getElementById('auth-step-phone')) {
+    document.getElementById('auth-step-phone').classList.remove('hidden');
+    document.getElementById('auth-step-otp').classList.add('hidden');
+    document.getElementById('auth-otp-input').value = '';
+  }
+}
+
+// Direct User Login (No OTP required)
+async function handleUserLogin() {
+  const phoneInput = document.getElementById('auth-user-phone');
+  const nameInput = document.getElementById('auth-user-name');
+  const phone = phoneInput ? phoneInput.value.trim() : '';
+  const name = nameInput ? nameInput.value.trim() : '';
+  const btn = document.getElementById('btn-user-login') || document.getElementById('btn-send-otp');
+
+  if (!phone || phone.length < 10) {
+    showToast('Please enter a valid 10-digit mobile number', 'warning');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = 'Logging in...';
+  }
+
+  try {
+    const res = await fetch('/api/auth/direct-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, name })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      STATE.token = data.token;
+      STATE.user = data.user;
+      localStorage.setItem('kp_token', data.token);
+
+      closeModal('modal-auth');
+      showToast(data.message || 'Logged in successfully!', 'success');
+
+      if (data.user.role === 'ADMIN') {
+        showAdminView();
+      } else {
+        showUserView();
+      }
+    } else {
+      showToast(data.message || 'Login failed', 'error');
+    }
+  } catch (err) {
+    showToast('Network error during login', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i data-lucide="log-in" class="w-4 h-4"></i><span>Login to Account</span>`;
+      lucide.createIcons();
+    }
+  }
 }
 
 // Send OTP
