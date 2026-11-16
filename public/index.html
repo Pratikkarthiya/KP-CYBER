@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KP CYBER | Digital Service Provider Portal</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navigation Bar -->
+  <nav class="sticky top-0 z-40 glass-header px-4 lg:px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white font-bold text-xl">
+        KP
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-extrabold text-xl tracking-tight text-white">KP CYBER</span>
+          <span class="text-[10px] tracking-wider uppercase font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">Service Portal</span>
+        </div>
+        <p class="text-xs text-slate-400 hidden sm:block">Digital Forms, Admit Cards & Online Applications</p>
+      </div>
+    </div>
+
+    <!-- Right Header Elements -->
+    <div class="flex items-center space-x-3">
+      <!-- Unauthenticated State -->
+      <div id="nav-unauth" class="flex items-center space-x-2">
+        <button onclick="openAuthModal('user')" class="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md shadow-indigo-600/25 flex items-center space-x-1.5">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          <span>User Login (OTP)</span>
+        </button>
+        <button onclick="openAuthModal('admin')" class="px-3.5 py-2 text-sm font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all border border-slate-700 flex items-center space-x-1.5">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+          <span class="hidden sm:inline">Admin Login</span>
+        </button>
+      </div>
+
+      <!-- Authenticated User State -->
+      <div id="nav-auth" class="hidden flex items-center space-x-3">
+        <!-- Assigned Rate Badge (User only) -->
+        <div id="nav-rate-badge" class="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+          <span class="text-slate-400">Your Rate:</span>
+          <span id="nav-user-rate" class="font-bold text-indigo-400">₹0.00</span>
+          <span class="text-slate-500">/sub</span>
+        </div>
+
+        <!-- Wallet Balance Button & Quick Topup -->
+        <div id="nav-wallet-box" class="flex items-center rounded-lg bg-slate-900 border border-slate-800 p-1">
+          <div class="flex items-center space-x-1.5 px-2.5 py-1 text-xs">
+            <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
+            <span class="text-slate-400">Wallet:</span>
+            <span id="nav-wallet-balance" class="font-bold text-emerald-400 font-mono">₹0.00</span>
+          </div>
+          <button id="nav-topup-btn" onclick="openTopupModal()" class="px-2.5 py-1 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center space-x-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Top Up</span>
+          </button>
+        </div>
+
+        <!-- User / Admin Profile Menu -->
+        <div class="flex items-center space-x-2 pl-2 border-l border-slate-800">
+          <div class="text-right hidden sm:block">
+            <div id="nav-user-name" class="text-xs font-bold text-slate-200 truncate max-w-[120px]">User</div>
+            <div id="nav-user-status" class="text-[10px] font-medium text-amber-400">Pending Approval</div>
+          </div>
+          <button onclick="handleLogout()" title="Logout" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1: GUEST HERO / NOT LOGGED IN LANDING                     -->
+    <!-- ============================================================== -->
+    <section id="view-landing" class="space-y-12 py-8">
+      <div class="text-center max-w-3xl mx-auto space-y-5">
+        <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          <span>Fast, Reliable Cyber Cafe & e-Application Portal</span>
+        </div>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+          Seamless Online <span class="text-gradient">Application Services</span> With Wallet System
+        </h1>
+        <p class="text-slate-400 text-base sm:text-lg leading-relaxed">
+          Log in with your Mobile OTP, receive Admin approval with your custom service rate, top up your wallet, and submit your application details (Application Number, Date of Birth & Password) for instant processing.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+          <button onclick="openAuthModal('user')" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold text-base shadow-lg shadow-indigo-600/30 transition-all flex items-center space-x-2">
+            <i data-lucide="phone-call" class="w-5 h-5"></i>
+            <span>Customer Login with Mobile OTP</span>
+          </button>
+          <button onclick="openAuthModal('admin')" class="px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-base border border-slate-700 transition-all flex items-center space-x-2">
+            <i data-lucide="shield" class="w-5 h-5 text-indigo-400"></i>
+            <span>Admin Control Panel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-5 pt-8">
+        <div class="glass-card p-5 rounded-2xl space-y-3 glass-card-hover">
+          <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <i data-lucide="smartphone" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white">1. Mobile OTP Login</h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Simple, passwordless login using your 10-digit mobile number with 6-digit OTP verification.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl space-y-3 glass-card-hover">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i data-lucide="user-check" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white">2. Admin Approval & Rate</h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Admin reviews your account and assigns a tailored service rate (e.g. ₹50) per submission.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl space-y-3 glass-card-hover">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <i data-lucide="wallet" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white">3. UPI Wallet Top-up</h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Recharge your wallet balance using UPI QR code scan (PhonePe, GPay, Paytm) with instant UTR verification.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl space-y-3 glass-card-hover">
+          <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+            <i data-lucide="send" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-bold text-lg text-white">4. Submit App Details</h3>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Submit Application Number, Date of Birth & Password. Fee automatically debited and service processed!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: USER DASHBOARD (CUSTOMER PORTAL)                      -->
+    <!-- ============================================================== -->
+    <section id="view-user" class="hidden space-y-6">
+
+      <!-- Status Banner: Pending Approval -->
+      <div id="user-pending-alert" class="hidden p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-start space-x-3.5">
+          <div class="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 mt-0.5">
+            <i data-lucide="clock" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-amber-400 text-base">Account Pending Administrator Approval</h4>
+            <p class="text-slate-300 text-xs mt-1 leading-relaxed">
+              Your mobile number has been verified! Before you can top up your wallet or submit application details, the KP Cyber Administrator must approve your account and assign your customized service rate.
+            </p>
+            <div class="flex items-center space-x-3 mt-2 text-xs text-amber-300/80">
+              <span>Status: <strong class="text-amber-400">Under Review</strong></span>
+              <span>•</span>
+              <span>Need urgent access? Call support: <strong class="text-white">+91 98765 43210</strong></span>
+            </div>
+          </div>
+        </div>
+        <button onclick="refreshUserProfile()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors flex items-center space-x-1.5 whitespace-nowrap">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span>Check Approval Status</span>
+        </button>
+      </div>
+
+      <!-- Status Banner: Approved User -->
+      <div id="user-approved-alert" class="hidden p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+            <i data-lucide="badge-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="text-sm font-bold text-emerald-400">Account Active & Approved!</span>
+            <span class="text-xs text-slate-300 ml-2">Your assigned submission rate is <strong id="user-banner-rate" class="text-white font-mono">₹50.00</strong> per application.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Wallet Card -->
+        <div class="glass-card p-5 rounded-2xl space-y-2 border-l-4 border-l-emerald-500">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>Wallet Balance</span>
+            <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <div class="text-3xl font-extrabold text-emerald-400 font-mono" id="user-card-balance">₹0.00</div>
+          <button onclick="openTopupModal()" class="w-full mt-2 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition-colors flex items-center justify-center space-x-1">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+            <span>Top Up Balance</span>
+          </button>
+        </div>
+
+        <!-- Assigned Rate Card -->
+        <div class="glass-card p-5 rounded-2xl space-y-2 border-l-4 border-l-indigo-500">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>Your Service Rate</span>
+            <i data-lucide="tag" class="w-4 h-4 text-indigo-400"></i>
+          </div>
+          <div class="text-3xl font-extrabold text-indigo-400 font-mono" id="user-card-rate">₹0.00</div>
+          <p class="text-[11px] text-slate-400">Deducted per application submit</p>
+        </div>
+
+        <!-- Submissions Count -->
+        <div class="glass-card p-5 rounded-2xl space-y-2 border-l-4 border-l-purple-500">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>Total Applications</span>
+            <i data-lucide="file-text" class="w-4 h-4 text-purple-400"></i>
+          </div>
+          <div class="text-3xl font-extrabold text-white font-mono" id="user-card-submissions">0</div>
+          <p class="text-[11px] text-slate-400">Submitted by your account</p>
+        </div>
+
+        <!-- Account Status -->
+        <div class="glass-card p-5 rounded-2xl space-y-2 border-l-4 border-l-amber-500">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>Approval Status</span>
+            <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <div class="text-xl font-bold uppercase tracking-wide" id="user-card-status">PENDING</div>
+          <p class="text-[11px] text-slate-400" id="user-card-status-sub">Requires admin validation</p>
+        </div>
+      </div>
+
+      <!-- User Navigation Tabs -->
+      <div class="flex border-b border-slate-800 space-x-6 text-sm font-semibold">
+        <button onclick="switchUserTab('submit')" id="tab-btn-submit" class="pb-3 text-indigo-400 border-b-2 border-indigo-500 flex items-center space-x-2">
+          <i data-lucide="file-plus" class="w-4 h-4"></i>
+          <span>Submit Application Details</span>
+        </button>
+        <button onclick="switchUserTab('history')" id="tab-btn-history" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+          <i data-lucide="list-ordered" class="w-4 h-4"></i>
+          <span>My Applications (<span id="user-tab-count">0</span>)</span>
+        </button>
+        <button onclick="switchUserTab('wallet')" id="tab-btn-wallet" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+          <i data-lucide="history" class="w-4 h-4"></i>
+          <span>Wallet Ledger & Top-up</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: SUBMIT APPLICATION DETAILS -->
+      <div id="user-tab-submit" class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Submission Form (2 Cols) -->
+          <div class="lg:col-span-2 glass-card p-6 rounded-2xl space-y-6">
+            <div>
+              <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+                <i data-lucide="file-input" class="w-5 h-5 text-indigo-400"></i>
+                <span>Submit Candidate Details</span>
+              </h3>
+              <p class="text-xs text-slate-400 mt-1">
+                Enter the candidate's Application Number, Date of Birth and Password for LL EXAM submission.
+              </p>
+            </div>
+
+            <!-- Lock Overlay if User is not Approved -->
+            <div id="submit-locked-notice" class="hidden p-6 rounded-xl bg-slate-900/90 border border-amber-500/30 text-center space-y-3">
+              <div class="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+              </div>
+              <h4 class="font-bold text-base text-amber-300">Submission Form Locked</h4>
+              <p class="text-xs text-slate-300 max-w-md mx-auto">
+                Your account is currently waiting for Admin Approval. Once approved, the admin sets your per-application rate and you can top up your wallet to start submitting.
+              </p>
+            </div>
+
+            <!-- Actual Submission Form -->
+            <form id="form-submit-application" onsubmit="handleApplicationSubmit(event)" class="space-y-4">
+              <!-- Service Type -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Service Type</label>
+                <select id="sub-service-type" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500 font-semibold">
+                  <option value="LL EXAM" selected>LL EXAM</option>
+                </select>
+              </div>
+
+              <!-- Required 3 Fields requested by user: Application No, DOB, Password -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Application Number -->
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+                    <span>Application Number / Roll Number <span class="text-rose-400">*</span></span>
+                    <span class="text-[10px] text-slate-500">As shown on confirmation slip</span>
+                  </label>
+                  <div class="relative">
+                    <input type="text" id="sub-app-no" required placeholder="e.g. 240410098765" class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono uppercase">
+                    <i data-lucide="hash" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3"></i>
+                  </div>
+                </div>
+
+                <!-- Date of Birth -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Date of Birth (DOB) <span class="text-rose-400">*</span>
+                  </label>
+                  <div class="relative">
+                    <input type="date" id="sub-dob" required class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3"></i>
+                  </div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+                    <span>Portal Password / Security PIN <span class="text-rose-400">*</span></span>
+                    <span class="text-[10px] text-slate-500">For candidate login</span>
+                  </label>
+                  <div class="relative">
+                    <input type="password" id="sub-password" required placeholder="Portal login password" class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500">
+                    <i data-lucide="key" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3"></i>
+                    <button type="button" onclick="togglePasswordVisibility('sub-password')" class="absolute right-3 top-3 text-slate-500 hover:text-slate-300">
+                      <i data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Special Remarks / Instructions -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Additional Notes / Instructions for Operator (Optional)</label>
+                <textarea id="sub-notes" rows="2" placeholder="e.g. LL Exam slot timing / language preference or special instructions" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500"></textarea>
+              </div>
+
+              <!-- Wallet Calculation & Submit Button -->
+              <div class="pt-4 border-t border-slate-800 space-y-3">
+                <div class="flex items-center justify-between text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                  <div class="space-y-1">
+                    <div class="text-slate-400">Service Charge for this submission:</div>
+                    <div class="text-base font-bold text-indigo-400 font-mono" id="sub-rate-display">₹50.00</div>
+                  </div>
+                  <div class="text-right space-y-1">
+                    <div class="text-slate-400">Available Wallet Balance:</div>
+                    <div class="text-base font-bold text-emerald-400 font-mono" id="sub-balance-display">₹0.00</div>
+                  </div>
+                </div>
+
+                <!-- Insufficient Balance Warning -->
+                <div id="sub-insufficient-warning" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-xs text-rose-300">
+                  <div class="flex items-center space-x-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
+                    <span>Insufficient balance! Top up your wallet to proceed.</span>
+                  </div>
+                  <button type="button" onclick="openTopupModal()" class="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-medium">
+                    Top Up Now
+                  </button>
+                </div>
+
+                <button type="submit" id="btn-submit-application" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+                  <i data-lucide="check-circle" class="w-4 h-4"></i>
+                  <span>Confirm & Submit Application (Deduct Rate from Wallet)</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Helpful Instructions & Support Card (1 Col) -->
+          <div class="space-y-6">
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+              <h4 class="font-bold text-sm text-white flex items-center space-x-2">
+                <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i>
+                <span>How This Works</span>
+              </h4>
+              <ul class="text-xs text-slate-300 space-y-3">
+                <li class="flex items-start space-x-2.5">
+                  <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 font-bold text-[10px]">1</span>
+                  <span>Fill in the candidate's exact <strong>Application No</strong>, <strong>DOB</strong>, and <strong>Password</strong>.</span>
+                </li>
+                <li class="flex items-start space-x-2.5">
+                  <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 font-bold text-[10px]">2</span>
+                  <span>Your assigned rate is deducted instantly from your wallet upon clicking submit.</span>
+                </li>
+                <li class="flex items-start space-x-2.5">
+                  <span class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 font-bold text-[10px]">3</span>
+                  <span>KP Cyber admin verifies the credentials, downloads the document/result, and marks it completed with download links.</span>
+                </li>
+                <li class="flex items-start space-x-2.5">
+                  <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold text-[10px]">4</span>
+                  <span>If an application fails due to incorrect credentials, the admin can reject and refund the fee to your wallet.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Quick Wallet Card -->
+            <div class="glass-card p-6 rounded-2xl space-y-3 bg-gradient-to-br from-slate-900 to-indigo-950/40">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-300">Quick Recharge</span>
+                <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+              </div>
+              <p class="text-xs text-slate-400">
+                Need more funds? Scan the instant UPI QR code and recharge your wallet balance in under 2 minutes.
+              </p>
+              <button onclick="openTopupModal()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white border border-slate-700 flex items-center justify-center space-x-1.5 transition-colors">
+                <i data-lucide="qr-code" class="w-4 h-4 text-emerald-400"></i>
+                <span>Open UPI QR Code</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: MY APPLICATIONS HISTORY -->
+      <div id="user-tab-history" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white">Your Submitted Applications</h3>
+          <button onclick="loadUserSubmissions()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center space-x-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        <div id="user-submissions-container" class="space-y-3">
+          <!-- Submissions loaded via JS -->
+          <div class="p-8 text-center text-slate-500 text-xs">Loading your submissions...</div>
+        </div>
+      </div>
+
+      <!-- TAB 3: WALLET LEDGER & TOP-UPS -->
+      <div id="user-tab-wallet" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- UPI Quick Top-up Card (1 Col) -->
+          <div class="glass-card p-6 rounded-2xl space-y-4">
+            <h4 class="font-bold text-sm text-white flex items-center space-x-2">
+              <i data-lucide="arrow-down-circle" class="w-4 h-4 text-emerald-400"></i>
+              <span>Top-Up Wallet via UPI</span>
+            </h4>
+            <p class="text-xs text-slate-400">
+              Select amount and scan QR code to recharge balance instantly.
+            </p>
+            <button onclick="openTopupModal()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-2">
+              <i data-lucide="wallet" class="w-4 h-4"></i>
+              <span>Open Top-up Payment Screen</span>
+            </button>
+          </div>
+
+          <!-- Transactions Ledger Table (2 Cols) -->
+          <div class="lg:col-span-2 glass-card p-6 rounded-2xl space-y-4">
+            <h4 class="font-bold text-sm text-white flex items-center space-x-2">
+              <i data-lucide="receipt" class="w-4 h-4 text-indigo-400"></i>
+              <span>Wallet Transaction History</span>
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 font-semibold">
+                    <th class="py-2.5">Date</th>
+                    <th class="py-2.5">Type</th>
+                    <th class="py-2.5">Description</th>
+                    <th class="py-2.5 text-right">Amount</th>
+                    <th class="py-2.5 text-right">Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="user-transactions-table" class="divide-y divide-slate-800/60">
+                  <tr><td colspan="5" class="py-6 text-center text-slate-500">Loading wallet history...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 3: ADMIN CONTROL PANEL                                   -->
+    <!-- ============================================================== -->
+    <section id="view-admin" class="hidden space-y-6">
+      
+      <!-- Admin Header / Welcome Banner -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-card p-6 rounded-2xl border-l-4 border-l-purple-500">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider">Super Admin</span>
+            <h2 class="text-2xl font-black text-white">Administrator Command Center</h2>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">
+            Manage user approvals, assign custom submission rates, process customer applications & verify wallet top-ups.
+          </p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="loadAdminStats(); loadAdminUsers(); loadAdminSubmissions(); loadAdminTopups();" class="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center space-x-1.5 transition-colors">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Refresh All Data</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Admin Stats Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <!-- Pending Approvals -->
+        <div class="glass-card p-4 rounded-xl space-y-1 border-l-4 border-l-amber-500">
+          <div class="text-[11px] text-slate-400 font-medium">Pending Approvals</div>
+          <div class="text-2xl font-black text-amber-400 font-mono" id="admin-stat-pending-users">0</div>
+          <div class="text-[10px] text-slate-500">Users waiting for rate</div>
+        </div>
+
+        <!-- Total Users -->
+        <div class="glass-card p-4 rounded-xl space-y-1 border-l-4 border-l-indigo-500">
+          <div class="text-[11px] text-slate-400 font-medium">Registered Users</div>
+          <div class="text-2xl font-black text-indigo-400 font-mono" id="admin-stat-total-users">0</div>
+          <div class="text-[10px] text-slate-500">Active customer base</div>
+        </div>
+
+        <!-- Pending Applications -->
+        <div class="glass-card p-4 rounded-xl space-y-1 border-l-4 border-l-rose-500">
+          <div class="text-[11px] text-slate-400 font-medium">Pending Applications</div>
+          <div class="text-2xl font-black text-rose-400 font-mono" id="admin-stat-pending-sub">0</div>
+          <div class="text-[10px] text-slate-500">To process & download</div>
+        </div>
+
+        <!-- Pending Topups -->
+        <div class="glass-card p-4 rounded-xl space-y-1 border-l-4 border-l-emerald-500">
+          <div class="text-[11px] text-slate-400 font-medium">Pending Top-ups</div>
+          <div class="text-2xl font-black text-emerald-400 font-mono" id="admin-stat-pending-topups">0</div>
+          <div class="text-[10px] text-slate-500">UPI payments to verify</div>
+        </div>
+
+        <!-- Total Submissions Revenue -->
+        <div class="glass-card p-4 rounded-xl space-y-1 border-l-4 border-l-cyan-500 col-span-2 lg:col-span-1">
+          <div class="text-[11px] text-slate-400 font-medium">Total Fees Collected</div>
+          <div class="text-2xl font-black text-cyan-400 font-mono" id="admin-stat-revenue">₹0.00</div>
+          <div class="text-[10px] text-slate-500">From completed services</div>
+        </div>
+      </div>
+
+      <!-- Admin Tabs Navigation -->
+      <div class="flex border-b border-slate-800 space-x-6 text-sm font-semibold">
+        <button onclick="switchAdminTab('users')" id="admin-tab-btn-users" class="pb-3 text-indigo-400 border-b-2 border-indigo-500 flex items-center space-x-2">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>User Approvals & Rates</span>
+        </button>
+        <button onclick="switchAdminTab('submissions')" id="admin-tab-btn-submissions" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+          <i data-lucide="folder-archive" class="w-4 h-4"></i>
+          <span>Application Submissions</span>
+        </button>
+        <button onclick="switchAdminTab('topups')" id="admin-tab-btn-topups" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+          <i data-lucide="banknote" class="w-4 h-4"></i>
+          <span>Top-Up Requests</span>
+        </button>
+        <button onclick="switchAdminTab('settings')" id="admin-tab-btn-settings" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+          <span>Portal Settings</span>
+        </button>
+      </div>
+
+      <!-- ADMIN TAB 1: USERS & RATE ASSIGNMENT -->
+      <div id="admin-tab-users" class="space-y-4">
+        <!-- Filter Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-400 font-medium">Filter by Status:</span>
+            <select id="admin-user-filter" onchange="loadAdminUsers()" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+              <option value="ALL">All Users</option>
+              <option value="PENDING" selected>Pending Approvals Only</option>
+              <option value="APPROVED">Approved Users</option>
+              <option value="REJECTED">Rejected Users</option>
+              <option value="BLOCKED">Blocked Users</option>
+            </select>
+          </div>
+          <div class="text-xs text-slate-400" id="admin-user-count-label">Showing users</div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="glass-card rounded-2xl overflow-hidden border border-slate-800">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-900/80 text-slate-400 uppercase font-semibold tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">User Details</th>
+                  <th class="py-3 px-4">Registered On</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4">Assigned Rate</th>
+                  <th class="py-3 px-4">Wallet Balance</th>
+                  <th class="py-3 px-4 text-right">Admin Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table" class="divide-y divide-slate-800/80">
+                <tr><td colspan="6" class="p-8 text-center text-slate-500">Loading user accounts...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN TAB 2: APPLICATIONS / SUBMISSIONS MANAGEMENT -->
+      <div id="admin-tab-submissions" class="hidden space-y-4">
+        <!-- Filter Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-400 font-medium">Filter Submissions:</span>
+            <select id="admin-sub-filter" onchange="loadAdminSubmissions()" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+              <option value="ALL">All Submissions</option>
+              <option value="PENDING" selected>Pending Verification</option>
+              <option value="PROCESSING">In Processing</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
+          <div class="text-xs text-slate-400" id="admin-sub-count-label">Submissions list</div>
+        </div>
+
+        <!-- Submissions Table -->
+        <div class="glass-card rounded-2xl overflow-hidden border border-slate-800">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-900/80 text-slate-400 uppercase font-semibold tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Tracking ID / Date</th>
+                  <th class="py-3 px-4">Customer</th>
+                  <th class="py-3 px-4">Application No</th>
+                  <th class="py-3 px-4">DOB</th>
+                  <th class="py-3 px-4">Password</th>
+                  <th class="py-3 px-4">Service & Rate</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-submissions-table" class="divide-y divide-slate-800/80 font-mono">
+                <tr><td colspan="8" class="p-8 text-center text-slate-500">Loading submissions...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN TAB 3: TOP-UPS MANAGEMENT -->
+      <div id="admin-tab-topups" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-400 font-medium">Filter Top-ups:</span>
+            <select id="admin-topup-filter" onchange="loadAdminTopups()" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none">
+              <option value="PENDING" selected>Pending Verification Only</option>
+              <option value="ALL">All Top-up Requests</option>
+              <option value="APPROVED">Approved Requests</option>
+              <option value="REJECTED">Rejected Requests</option>
+            </select>
+          </div>
+          <div class="text-xs text-slate-400" id="admin-topup-count-label">Topup requests</div>
+        </div>
+
+        <!-- Topups Table -->
+        <div class="glass-card rounded-2xl overflow-hidden border border-slate-800">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-900/80 text-slate-400 uppercase font-semibold tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Request Date</th>
+                  <th class="py-3 px-4">Customer Phone & Name</th>
+                  <th class="py-3 px-4">Amount</th>
+                  <th class="py-3 px-4">UTR / Transaction Ref</th>
+                  <th class="py-3 px-4">Screenshot</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4 text-right">Approve / Reject</th>
+                </tr>
+              </thead>
+              <tbody id="admin-topups-table" class="divide-y divide-slate-800/80">
+                <tr><td colspan="7" class="p-8 text-center text-slate-500">Loading top-up requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN TAB 4: SYSTEM SETTINGS -->
+      <div id="admin-tab-settings" class="hidden space-y-6">
+        <div class="max-w-2xl glass-card p-6 rounded-2xl space-y-6">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+              <i data-lucide="sliders" class="w-5 h-5 text-indigo-400"></i>
+              <span>Portal System Configurations</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Configure default rates, UPI collection details, and portal contact information.</p>
+          </div>
+
+          <form id="form-admin-settings" onsubmit="handleSettingsUpdate(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Default Submission Rate (₹)</label>
+              <input type="number" id="setting-default-rate" step="0.5" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+              <p class="text-[11px] text-slate-500 mt-1">Base rate assigned automatically to newly approved users unless customized.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">UPI ID for Top-up Payments</label>
+                <input type="text" id="setting-upi-id" required placeholder="e.g. kpcyber@upi" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">UPI Payee Business Name</label>
+                <input type="text" id="setting-upi-name" required placeholder="e.g. KP Cyber Services" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Support Contact Number</label>
+              <input type="text" id="setting-support-phone" required placeholder="+91 98765 43210" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Portal Display Title</label>
+              <input type="text" id="setting-portal-name" required placeholder="KP Cyber Service Portal" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <!-- YouPI-PG Payment Gateway Settings Section -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <h4 class="text-sm font-bold text-indigo-400">YouPI-PG Gateway API Configurations</h4>
+                </div>
+                <span class="text-[10px] text-slate-400 font-mono">Sovereign V2 Contract</span>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">YouPI Gateway API URL</label>
+                <input type="text" id="setting-youpi-api-url" placeholder="http://localhost:7000" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+                <p class="text-[10px] text-slate-500 mt-1">Default: http://localhost:7000 (Checkout Portal Proxy) or http://localhost:6100 (Payment Core)</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1">YouPI Merchant ID</label>
+                  <input type="text" id="setting-youpi-merchant-id" placeholder="00000000-0000-0000-0000-000000000001" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1">YouPI Merchant API Key</label>
+                  <input type="password" id="setting-youpi-api-key" placeholder="yp_merchant_api_key_..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-indigo-500">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">YouPI Webhook Secret (HMAC-SHA256)</label>
+                <input type="password" id="setting-youpi-webhook-secret" placeholder="yp_whsec_..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-indigo-500">
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs font-mono">
+                <div>
+                  <span class="text-slate-500 text-[10px] block">Configure this Webhook URL on your YouPI-PG Gateway:</span>
+                  <span class="text-indigo-400 font-bold" id="setting-webhook-url">http://localhost:3000/api/webhooks/youpi</span>
+                </div>
+                <button type="button" onclick="copyToClipboard('http://localhost:3000/api/webhooks/youpi', 'Webhook URL')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-sans">
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <!-- SMS Gateway & OTP Authentication Section -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                  <h4 class="text-sm font-bold text-amber-400">Mobile OTP & SMS Provider Setup</h4>
+                </div>
+                <span class="text-[10px] text-slate-400 font-mono">Real-time SMS</span>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Active SMS Provider</label>
+                <select id="setting-sms-provider" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-amber-500">
+                  <option value="SIMULATOR">Simulator (Dev Mode with On-Screen Auto-fill)</option>
+                  <option value="FAST2SMS">Fast2SMS (Quick SMS / OTP Route - India)</option>
+                  <option value="TWOFACTOR">2Factor.in (Indian SMS & OTP Gateway)</option>
+                  <option value="TWILIO">Twilio (International & India SMS)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Fast2SMS Authorization API Key</label>
+                <input type="password" id="setting-fast2sms-api-key" placeholder="Enter Fast2SMS API Key" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-amber-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">2Factor.in API Key</label>
+                <input type="password" id="setting-twofactor-api-key" placeholder="Enter 2Factor API Key" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-amber-500">
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">Twilio Account SID</label>
+                  <input type="text" id="setting-twilio-sid" placeholder="AC..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">Twilio Auth Token</label>
+                  <input type="password" id="setting-twilio-token" placeholder="Token" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-300 mb-1">Twilio Sender Number</label>
+                  <input type="text" id="setting-twilio-phone" placeholder="+1..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none">
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/30 transition-all">
+              Save Settings
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: AUTHENTICATION (USER OTP & ADMIN LOGIN)                 -->
+  <!-- ============================================================== -->
+  <div id="modal-auth" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+      <!-- Close button -->
+      <button onclick="closeModal('modal-auth')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Auth Tabs: Customer OTP vs Admin -->
+      <div class="flex border-b border-slate-800 space-x-4">
+        <button id="auth-tab-btn-user" onclick="switchAuthTab('user')" class="pb-2.5 text-indigo-400 border-b-2 border-indigo-500 font-bold text-sm flex items-center space-x-1.5">
+          <i data-lucide="smartphone" class="w-4 h-4"></i>
+          <span>User Login (Mobile OTP)</span>
+        </button>
+        <button id="auth-tab-btn-admin" onclick="switchAuthTab('admin')" class="pb-2.5 text-slate-400 hover:text-slate-200 font-bold text-sm flex items-center space-x-1.5">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Admin Portal</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: USER MOBILE OTP FLOW -->
+      <div id="auth-tab-user" class="space-y-4">
+        
+        <!-- STEP 1: Phone & Name Input -->
+        <div id="auth-step-phone" class="space-y-4">
+          <p class="text-xs text-slate-400">
+            Enter your 10-digit mobile number to receive a verification OTP.
+          </p>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name (Optional for first-time user)</label>
+            <input type="text" id="auth-user-name" placeholder="e.g. Rahul Sharma" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Mobile Number <span class="text-rose-400">*</span></label>
+            <div class="flex">
+              <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-700 bg-slate-800 text-slate-400 text-xs font-mono">+91</span>
+              <input type="tel" id="auth-user-phone" maxlength="10" placeholder="9876543210" class="w-full px-3.5 py-2.5 rounded-r-xl bg-slate-900 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+            </div>
+          </div>
+
+          <button onclick="handleSendOTP()" id="btn-send-otp" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>Get OTP on Mobile</span>
+          </button>
+        </div>
+
+        <!-- STEP 2: OTP Verification -->
+        <div id="auth-step-otp" class="hidden space-y-4">
+          <div class="text-center space-y-1">
+            <h4 class="text-sm font-bold text-white">Enter 6-Digit OTP</h4>
+            <p class="text-xs text-slate-400">Sent to <span id="auth-display-phone" class="font-mono text-indigo-400 font-bold"></span></p>
+          </div>
+
+          <!-- Convenient Quick-Fill Demo Banner -->
+          <div id="auth-otp-debug-banner" class="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2">
+              <span class="text-indigo-400 font-mono font-bold" id="auth-debug-otp-code">------</span>
+              <span class="text-slate-400 text-[10px]">(Demo Auto-OTP)</span>
+            </div>
+            <button type="button" onclick="autoFillOTP()" class="px-2 py-1 rounded bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-[11px] font-semibold transition-colors">
+              Click to Auto-fill
+            </button>
+          </div>
+
+          <div>
+            <input type="text" id="auth-otp-input" maxlength="6" placeholder="• • • • • •" class="w-full py-3 text-center tracking-[0.5em] text-2xl font-mono rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+
+          <button onclick="handleVerifyOTP()" id="btn-verify-otp" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Verify & Access Account</span>
+          </button>
+
+          <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+            <button onclick="resetOTPForm()" class="hover:text-slate-200">Change Mobile Number</button>
+            <button onclick="handleSendOTP()" class="text-indigo-400 hover:underline">Resend OTP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: ADMIN PASSWORD LOGIN -->
+      <div id="auth-tab-admin" class="hidden space-y-4">
+        <p class="text-xs text-slate-400">
+          Administrator login for managing user approvals, per-user rates, and applications.
+        </p>
+
+        <!-- Quick Demo Admin Fill Banner -->
+        <div class="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-between text-xs">
+          <span class="text-purple-300 text-[11px]">Demo: <strong>9876543210</strong> / <strong>admin123</strong></span>
+          <button type="button" onclick="fillDemoAdmin()" class="px-2 py-1 rounded bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-[11px] font-semibold">
+            Auto-fill
+          </button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Admin Mobile / Email</label>
+          <input type="text" id="auth-admin-login" placeholder="9876543210" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+          <input type="password" id="auth-admin-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-purple-500">
+        </div>
+
+        <button onclick="handleAdminLogin()" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all flex items-center justify-center space-x-2">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Login to Admin Panel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: WALLET TOP-UP & UPI QR CODE                             -->
+  <!-- ============================================================== -->
+  <div id="modal-topup" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <button onclick="closeModal('modal-topup')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-wider">Powered by YouPI-PG</span>
+        </div>
+        <h3 class="text-xl font-bold text-white flex items-center space-x-2 mt-1">
+          <i data-lucide="wallet" class="w-5 h-5 text-emerald-400"></i>
+          <span>Recharge Wallet Balance</span>
+        </h3>
+        <p class="text-xs text-slate-400 mt-1">Select payment method below: YouPI Gateway for instant automated top-up, or Direct UPI scan.</p>
+      </div>
+
+      <!-- Payment Method Switcher Tabs -->
+      <div class="grid grid-cols-2 gap-2 bg-slate-900/80 p-1 rounded-2xl border border-slate-800">
+        <button type="button" id="tab-topup-btn-youpi" onclick="switchTopupMethod('youpi')" class="py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs transition-all shadow-md flex items-center justify-center space-x-1.5">
+          <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+          <span>YouPI Payment Gateway</span>
+        </button>
+        <button type="button" id="tab-topup-btn-manual" onclick="switchTopupMethod('manual')" class="py-2.5 rounded-xl text-slate-400 hover:text-white font-semibold text-xs transition-all flex items-center justify-center space-x-1.5">
+          <i data-lucide="qr-code" class="w-4 h-4"></i>
+          <span>Manual UPI Scan & UTR</span>
+        </button>
+      </div>
+
+      <!-- Quick Preset Amounts -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-slate-300">Select Top-Up Amount</label>
+        <div class="grid grid-cols-4 gap-2">
+          <button type="button" onclick="selectTopupAmount(50)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono font-bold text-white transition-colors topup-preset-btn">₹50</button>
+          <button type="button" onclick="selectTopupAmount(100)" class="py-2 rounded-xl bg-indigo-600/30 border border-indigo-500 text-xs font-mono font-bold text-indigo-300 transition-colors topup-preset-btn active">₹100</button>
+          <button type="button" onclick="selectTopupAmount(200)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono font-bold text-white transition-colors topup-preset-btn">₹200</button>
+          <button type="button" onclick="selectTopupAmount(500)" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono font-bold text-white transition-colors topup-preset-btn">₹500</button>
+        </div>
+        <div class="mt-2">
+          <input type="number" id="topup-custom-amount" onchange="generateQrCode(this.value)" placeholder="Or enter custom amount in ₹" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-emerald-500">
+        </div>
+      </div>
+
+      <!-- METHOD 1: YouPI-PG Gateway Section -->
+      <div id="method-youpi-box" class="space-y-4">
+        <div class="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/60 to-purple-950/40 border border-indigo-500/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-bold text-indigo-300">YouPI Sovereign Payment Gateway</span>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Auto Reconciled</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Fast, zero-broker UPI payments with authoritative HMAC-SHA256 signed webhook reconciliation.
+          </p>
+
+          <!-- Action Button to Start Gateway Session -->
+          <button type="button" onclick="initiateYouPiPayment()" id="btn-start-youpi" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+            <i data-lucide="zap" class="w-4 h-4 text-amber-300"></i>
+            <span>Pay & Recharge with YouPI-PG Gateway</span>
+          </button>
+        </div>
+
+        <!-- YouPI Active Checkout Container (Populated once session created) -->
+        <div id="youpi-checkout-container" class="hidden p-5 rounded-2xl bg-slate-900 border border-indigo-500/40 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Payment Order</div>
+              <div class="text-xs font-mono font-bold text-indigo-400" id="youpi-order-id">-</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Amount</div>
+              <div class="text-base font-black text-emerald-400 font-mono" id="youpi-checkout-amount">₹0.00</div>
+            </div>
+          </div>
+
+          <!-- Gateway QR Code Card -->
+          <div class="p-4 bg-white rounded-2xl text-slate-900 text-center space-y-3 flex flex-col items-center shadow-lg">
+            <div class="w-48 h-48 bg-slate-100 rounded-xl flex items-center justify-center p-2 border border-slate-200 shadow-inner">
+              <img id="youpi-qr-img" src="" alt="UPI QR Code" class="w-full h-full object-contain">
+            </div>
+            <div class="text-xs font-bold text-slate-800">Scan via Google Pay, PhonePe, Paytm or BHIM</div>
+            <div class="flex items-center space-x-2 justify-center bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+              <span class="text-xs font-mono font-semibold text-slate-700" id="youpi-vpa-label">pratikkarthiya6@oksbi</span>
+              <button type="button" onclick="copyToClipboard(document.getElementById('youpi-vpa-label').innerText, 'UPI ID')" class="text-[11px] text-indigo-600 hover:underline font-bold">Copy</button>
+            </div>
+
+            <!-- Direct Mobile UPI Deep Link Button -->
+            <a id="youpi-upi-intent-link" href="#" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md flex items-center justify-center space-x-2 transition-all">
+              <i data-lucide="smartphone" class="w-4 h-4"></i>
+              <span>📱 Open UPI App (GPay / PhonePe / Paytm)</span>
+            </a>
+          </div>
+
+          <!-- Real Payment UTR Submission -->
+          <div class="space-y-2 pt-2 bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-slate-200">Enter 12-Digit UPI UTR / Ref No.</label>
+              <span class="text-[10px] text-slate-400">Found on Payment Receipt</span>
+            </div>
+            <p class="text-[11px] text-slate-400">After completing payment in your UPI app, enter the 12-digit transaction UTR reference below:</p>
+            <div class="flex space-x-2 mt-2">
+              <input type="text" id="youpi-utr-input" maxlength="20" placeholder="e.g. 431289012345" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-mono tracking-wider focus:outline-none focus:border-indigo-500">
+              <button type="button" id="btn-submit-youpi-utr" onclick="submitYouPiUtrClaim()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center space-x-1.5 shadow transition-all">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>Submit UTR</span>
+              </button>
+            </div>
+            <div class="text-[10px] text-emerald-400/90 flex items-center space-x-1 pt-1">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+              <span>Your payment is verified against Pratik Karthiya's bank records.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- METHOD 2: Manual Fallback Section -->
+      <div id="method-manual-box" class="hidden space-y-4">
+        <!-- Dynamic QR Code Card -->
+        <div class="p-4 rounded-2xl bg-white text-slate-900 text-center space-y-2 flex flex-col items-center shadow-lg">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-600">Scan via GPay / PhonePe / Paytm</div>
+          <div class="w-48 h-48 bg-slate-100 rounded-xl flex items-center justify-center p-2 border border-slate-200">
+            <img id="topup-qr-img" src="" alt="UPI QR Code" class="w-full h-full object-contain">
+          </div>
+          <div class="space-y-1">
+            <div class="text-sm font-black text-slate-900" id="topup-display-amount">Amount: ₹100.00</div>
+            <div class="flex items-center space-x-1.5 justify-center">
+              <span class="text-xs font-mono text-slate-600" id="topup-display-upi-id">kpcyber@upi</span>
+              <button onclick="copyToClipboard(document.getElementById('topup-display-upi-id').innerText)" class="text-xs text-indigo-600 hover:underline font-semibold">
+                Copy UPI
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Confirmation & UTR Form -->
+        <form id="form-topup-utr" onsubmit="handleTopupSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">
+              UPI Ref ID / UTR Number (12 Digits) <span class="text-rose-400">*</span>
+            </label>
+            <input type="text" id="topup-utr" placeholder="e.g. 431289012345" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:border-emerald-500">
+            <p class="text-[10px] text-slate-500 mt-1">Found in your payment app transaction details after successful payment.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Payment Screenshot (Optional)</label>
+            <input type="file" id="topup-screenshot" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700">
+          </div>
+
+          <button type="submit" id="btn-submit-topup" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Submit Manual Top-Up Verification</span>
+          </button>
+        </form>
+      </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Payment Screenshot (Optional)</label>
+          <input type="file" id="topup-screenshot" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700">
+        </div>
+
+        <button type="submit" id="btn-submit-topup" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Submit Top-Up Verification Request</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADMIN APPROVE USER & SET CUSTOM RATE                    -->
+  <!-- ============================================================== -->
+  <div id="modal-admin-approve" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+      <button onclick="closeModal('modal-admin-approve')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div>
+        <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium mb-2 border border-emerald-500/20">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span>Admin Approval Workflow</span>
+        </div>
+        <h3 class="text-xl font-bold text-white">Approve User & Assign Rate</h3>
+        <p class="text-xs text-slate-400 mt-1">
+          Assign the specific per-application charge for this user. This rate will be deducted from their wallet for each submission.
+        </p>
+      </div>
+
+      <!-- User Info Summary -->
+      <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5 text-xs">
+        <div class="flex justify-between">
+          <span class="text-slate-400">User Name:</span>
+          <span class="font-bold text-white" id="modal-approve-name">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Phone Number:</span>
+          <span class="font-mono text-indigo-400 font-bold" id="modal-approve-phone">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Current Status:</span>
+          <span class="text-amber-400 font-bold" id="modal-approve-status">PENDING</span>
+        </div>
+      </div>
+
+      <form id="form-approve-user" onsubmit="handleApproveUserSubmit(event)" class="space-y-4">
+        <input type="hidden" id="modal-approve-user-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Service Rate per Submission (₹) <span class="text-rose-400">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-2.5 text-sm font-bold text-slate-400 font-mono">₹</span>
+            <input type="number" id="modal-approve-rate" step="1" required min="0" value="50" class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-base text-white font-mono font-bold focus:outline-none focus:border-emerald-500">
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">Recommended: ₹50.00 (Standard cyber cafe fee). You can adjust this anytime.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Approval Notes / Remarks (Optional)</label>
+          <textarea id="modal-approve-notes" rows="2" placeholder="e.g. Verified customer, retail rate applied" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div class="flex items-center space-x-3 pt-2">
+          <button type="button" onclick="closeModal('modal-admin-approve')" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center space-x-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Confirm Approval</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADMIN MANUAL WALLET ADJUST (CREDIT/DEBIT)               -->
+  <!-- ============================================================== -->
+  <div id="modal-admin-wallet-adjust" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+      <button onclick="closeModal('modal-admin-wallet-adjust')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div>
+        <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+          <i data-lucide="coins" class="w-5 h-5 text-amber-400"></i>
+          <span>Adjust User Wallet Balance</span>
+        </h3>
+        <p class="text-xs text-slate-400 mt-1" id="modal-adjust-user-label">Manually credit or debit user's wallet</p>
+      </div>
+
+      <form id="form-adjust-wallet" onsubmit="handleAdjustWalletSubmit(event)" class="space-y-4">
+        <input type="hidden" id="modal-adjust-user-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Adjustment Type</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center space-x-2 p-2.5 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer">
+              <input type="radio" name="adjust-type" value="CREDIT" checked class="text-emerald-500 focus:ring-emerald-500">
+              <span class="text-xs font-bold text-emerald-400">Credit (+) Add Cash</span>
+            </label>
+            <label class="flex items-center space-x-2 p-2.5 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer">
+              <input type="radio" name="adjust-type" value="DEBIT" class="text-rose-500 focus:ring-rose-500">
+              <span class="text-xs font-bold text-rose-400">Debit (-) Deduct</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Amount (₹) <span class="text-rose-400">*</span></label>
+          <input type="number" id="modal-adjust-amount" step="1" min="1" required placeholder="e.g. 100" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Reason / Reference Note</label>
+          <input type="text" id="modal-adjust-reason" placeholder="e.g. Cash received at counter / promotional bonus" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all">
+          Apply Wallet Adjustment
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADMIN UPDATE SUBMISSION STATUS                          -->
+  <!-- ============================================================== -->
+  <div id="modal-admin-submission-update" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+      <button onclick="closeModal('modal-admin-submission-update')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div>
+        <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+          <i data-lucide="check-square" class="w-5 h-5 text-indigo-400"></i>
+          <span>Process & Update Application</span>
+        </h3>
+        <p class="text-xs text-slate-400 mt-1" id="modal-sub-update-tracking">Tracking ID: -</p>
+      </div>
+
+      <!-- Candidate Credentials Box for Admin's Reference -->
+      <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
+        <div class="font-bold text-slate-300">Candidate Login Details:</div>
+        <div class="grid grid-cols-2 gap-2 text-slate-300 font-mono">
+          <div>App No: <strong class="text-white" id="modal-sub-details-appno">-</strong></div>
+          <div>DOB: <strong class="text-white" id="modal-sub-details-dob">-</strong></div>
+          <div class="col-span-2">Password: <strong class="text-amber-400" id="modal-sub-details-pass">-</strong></div>
+        </div>
+      </div>
+
+      <form id="form-update-submission" onsubmit="handleSubmissionStatusSubmit(event)" class="space-y-4">
+        <input type="hidden" id="modal-sub-update-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Update Status To</label>
+          <select id="modal-sub-new-status" onchange="toggleRefundOption(this.value)" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <option value="PROCESSING">In Processing (Working on it)</option>
+            <option value="COMPLETED">Completed (Result/Admit Card Ready)</option>
+            <option value="REJECTED">Rejected (Failed / Invalid Details)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Admin Remarks / Notes for User</label>
+          <textarea id="modal-sub-remarks" rows="2" placeholder="e.g. Admit card downloaded successfully. Exam on 24th Nov." class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Result / Download Link (Optional URL)</label>
+          <input type="url" id="modal-sub-result-url" placeholder="https://drive.google.com/..." class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Or Upload Output Document (PDF / Image)</label>
+          <input type="file" id="modal-sub-file" accept=".pdf,image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700">
+        </div>
+
+        <!-- Refund Checkbox if Rejected -->
+        <div id="modal-sub-refund-box" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center space-x-2 text-xs">
+          <input type="checkbox" id="modal-sub-refund-check" class="rounded text-amber-500 focus:ring-amber-500">
+          <label for="modal-sub-refund-check" class="text-amber-300 cursor-pointer">
+            Automatically refund service fee back to customer's wallet?
+          </label>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all">
+          Save & Update Status
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: PRINTABLE APPLICATION RECEIPT                           -->
+  <!-- ============================================================== -->
+  <div id="modal-receipt" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+      <button onclick="closeModal('modal-receipt')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div id="printable-receipt" class="space-y-4 bg-slate-900/90 p-5 rounded-2xl border border-slate-800">
+        <div class="text-center border-b border-slate-700 pb-3 space-y-1">
+          <h2 class="text-lg font-black text-white">KP CYBER SERVICE PROVIDER</h2>
+          <p class="text-[11px] text-slate-400">Application Submission Acknowledgement & Fee Receipt</p>
+        </div>
+
+        <div class="space-y-2 text-xs font-mono">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Tracking ID:</span>
+            <span class="font-bold text-indigo-400" id="receipt-tracking-id">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Date & Time:</span>
+            <span class="text-slate-200" id="receipt-date">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Application No:</span>
+            <span class="font-bold text-white" id="receipt-app-no">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Date of Birth:</span>
+            <span class="text-slate-200" id="receipt-dob">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Service Type:</span>
+            <span class="text-slate-200" id="receipt-service">-</span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-2 text-sm font-bold">
+            <span class="text-slate-300">Fee Deducted (Wallet):</span>
+            <span class="text-emerald-400" id="receipt-amount">-</span>
+          </div>
+          <div class="flex justify-between text-[11px]">
+            <span class="text-slate-400">Status:</span>
+            <span class="text-amber-400 font-bold" id="receipt-status">PENDING PROCESSING</span>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-2 text-[10px] text-slate-500 text-center">
+          Thank you for using KP Cyber Services. For inquiries, quote Tracking ID.
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <button onclick="window.print()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/30 transition-all flex items-center justify-center space-x-1.5">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Print / Save PDF Receipt</span>
+        </button>
+        <button onclick="closeModal('modal-receipt')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- App Script -->
+  <script src="/js/app.js"></script>
+</body>
+</html>

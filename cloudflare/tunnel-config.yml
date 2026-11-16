@@ -1,0 +1,21 @@
+# Cloudflare Tunnel Named Configuration (For your own custom domain e.g. portal.kpcyber.com)
+#
+# 1. Login with cloudflared:
+#    .\cloudflared.exe tunnel login
+#
+# 2. Create your tunnel:
+#    .\cloudflared.exe tunnel create kp-cyber-tunnel
+#
+# 3. Associate your domain with tunnel:
+#    .\cloudflared.exe tunnel route dns kp-cyber-tunnel portal.kpcyber.com
+#
+# 4. Run your tunnel with this config file:
+#    .\cloudflared.exe tunnel --config cloudflare/tunnel-config.yml run
+
+tunnel: kp-cyber-tunnel
+credentials-file: C:\Users\<YOUR_USER>\.cloudflared\<TUNNEL_UUID>.json
+
+ingress:
+  - hostname: portal.kpcyber.com
+    service: http://localhost:3000
+  - service: http_status:404
