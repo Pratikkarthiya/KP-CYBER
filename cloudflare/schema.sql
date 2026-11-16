@@ -81,12 +81,16 @@ CREATE TABLE IF NOT EXISTS system_settings (
 
 -- Default settings
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('default_rate', '50.00');
-INSERT OR IGNORE INTO system_settings (key, value) VALUES ('upi_id', 'kpcyber@upi');
-INSERT OR IGNORE INTO system_settings (key, value) VALUES ('upi_name', 'KP Cyber Services');
+INSERT OR IGNORE INTO system_settings (key, value) VALUES ('upi_id', 'pratikkarthiya6@oksbi');
+INSERT OR IGNORE INTO system_settings (key, value) VALUES ('upi_name', 'Pratik Karthiya');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('portal_name', 'KP Cyber Service Portal');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('support_phone', '+91 98765 43210');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('youpi_api_url', 'http://localhost:7000');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('youpi_merchant_id', '00000000-0000-0000-0000-000000000001');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('youpi_merchant_api_key', 'yp_test_key_kpcyber_2026');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('youpi_webhook_secret', 'yp_whsec_kpcyber_2026');
-INSERT OR IGNORE INTO system_settings (key, value) VALUES ('sms_provider', 'FAST2SMS');
+INSERT OR IGNORE INTO system_settings (key, value) VALUES ('sms_provider', 'SIMULATOR');
+
+-- Seed Admin
+INSERT OR IGNORE INTO users (id, phone, name, email, password_hash, role, status, rate, wallet_balance, approved_at)
+VALUES (1, 'pratikarthiya6', 'Pratik Karthiya', 'pratikarthiya6@gmail.com', '$2b$10$sjBLoCYQerH1NS7mtu8K2.skiLBnUJ.mzeSXPcOmHeGfoySPRQyN6', 'ADMIN', 'APPROVED', 0, 99999, CURRENT_TIMESTAMP);

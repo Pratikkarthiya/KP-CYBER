@@ -1,0 +1,16 @@
+name = "kp-cyber"
+main = "cloudflare/worker.js"
+compatibility_date = "2026-11-16"
+compatibility_flags = ["nodejs_compat"]
+
+[site]
+bucket = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kp-cyber-db"
+database_id = "4ca59182-dc4a-467d-a8be-3acb39f29643"
+
+[vars]
+NODE_ENV = "production"
+JWT_SECRET = "kp-cyber-production-jwt-secret-key-2026"

@@ -6,7 +6,11 @@ compatibility_flags = ["nodejs_compat"]
 [site]
 bucket = "../public"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "kp-cyber-db"
+database_id = "4ca59182-dc4a-467d-a8be-3acb39f29643"
+
 [vars]
 NODE_ENV = "production"
-BACKEND_URL = "http://localhost:3000"
-JWT_SECRET = "your-custom-production-jwt-secret-key"
+JWT_SECRET = "kp-cyber-production-jwt-secret-key-2026"
