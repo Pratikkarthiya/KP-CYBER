@@ -1,16 +1,12 @@
-name = "kp-cyber-portal"
-main = "server.js"
+name = "kp-cyber"
+main = "worker.js"
 compatibility_date = "2026-11-16"
 compatibility_flags = ["nodejs_compat"]
 
 [site]
-bucket = "./public"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "kp-cyber-db"
-database_id = "your-cloudflare-d1-database-uuid"
+bucket = "../public"
 
 [vars]
 NODE_ENV = "production"
+BACKEND_URL = "http://localhost:3000"
 JWT_SECRET = "your-custom-production-jwt-secret-key"
