@@ -198,14 +198,37 @@ async function handleUserLogin() {
   }
 
   try {
-    const res = await fetch('/api/auth/direct-login', {
+    let res = await fetch('/api/auth/direct-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone, name })
     });
-    const data = await res.json();
 
-    if (data.success) {
+    let data;
+    if (res.status === 404) {
+      // Automatic fallback: silently auto-login via background OTP exchange
+      const sendRes = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, name })
+      });
+      const sendData = await sendRes.json();
+
+      if (sendData.success && sendData.otp) {
+        res = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, otp: sendData.otp, name })
+        });
+        data = await res.json();
+      } else {
+        data = sendData;
+      }
+    } else {
+      data = await res.json();
+    }
+
+    if (data && data.success) {
       STATE.token = data.token;
       STATE.user = data.user;
       localStorage.setItem('kp_token', data.token);
@@ -219,7 +242,7 @@ async function handleUserLogin() {
         showUserView();
       }
     } else {
-      showToast(data.message || 'Login failed', 'error');
+      showToast((data && data.message) || 'Login failed', 'error');
     }
   } catch (err) {
     showToast('Network error during login', 'error');
