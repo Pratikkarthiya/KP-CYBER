@@ -128,16 +128,23 @@ function initDB() {
   insertSetting.run('twilio_auth_token', '');
   insertSetting.run('twilio_from_phone', '');
 
-  // Seed default Admin if not exists
+  // Ensure Admin exists
+  const bcrypt = require('bcryptjs');
+  const adminLogin = process.env.ADMIN_LOGIN || 'pratikarthiya6';
+  const adminPass = process.env.ADMIN_PASSWORD || 'pratik3361';
+  const adminPassHash = bcrypt.hashSync(adminPass, 10);
   const existingAdmin = db.prepare("SELECT * FROM users WHERE role = 'ADMIN'").get();
   if (!existingAdmin) {
-    const bcrypt = require('bcryptjs');
-    const adminPassHash = bcrypt.hashSync('admin123', 10);
     db.prepare(`
       INSERT INTO users (phone, name, email, password_hash, role, status, rate, wallet_balance, approved_at)
       VALUES (?, ?, ?, ?, 'ADMIN', 'APPROVED', 0, 99999, CURRENT_TIMESTAMP)
-    `).run('9876543210', 'System Administrator', 'admin@kpcyber.com', adminPassHash);
-    console.log('✓ Default Admin created: Phone: 9876543210, Password: admin123');
+    `).run(adminLogin, 'Pratik Karthiya', `${adminLogin}@gmail.com`, adminPassHash);
+    console.log('✓ Admin account configured.');
+  } else if (existingAdmin.phone === '9876543210') {
+    db.prepare(`
+      UPDATE users SET phone = ?, name = ?, email = ?, password_hash = ? WHERE id = ?
+    `).run(adminLogin, 'Pratik Karthiya', `${adminLogin}@gmail.com`, adminPassHash, existingAdmin.id);
+    console.log('✓ Admin credentials upgraded.');
   }
 
   // Ensure uploads directory exists

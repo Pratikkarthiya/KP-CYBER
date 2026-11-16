@@ -11,11 +11,9 @@
 
 ---
 
-## 🔑 Default Administrator Credentials
+## 🔑 Administrator Access
 
-| Role | Username / Mobile | Password |
-| :--- | :--- | :--- |
-| **Super Admin** | `9876543210` | `admin123` |
+Administrator access is secured via private credentials configured during deployment. Ensure administrative credentials are kept confidential and not exposed in public repositories or client-facing views.
 
 ---
 

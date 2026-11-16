@@ -30,7 +30,7 @@ async function testYouPiIntegration() {
   res = await fetch(`${baseUrl}/api/auth/admin-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ login: '9876543210', password: 'admin123' })
+    body: JSON.stringify({ login: 'pratikarthiya6', password: 'pratik3361' })
   });
   data = await res.json();
   const adminToken = data.token;

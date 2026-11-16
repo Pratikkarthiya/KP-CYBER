@@ -168,8 +168,7 @@ function switchAuthTab(tab) {
 }
 
 function fillDemoAdmin() {
-  document.getElementById('auth-admin-login').value = '9876543210';
-  document.getElementById('auth-admin-password').value = 'admin123';
+  // Demo autofill disabled for security
 }
 
 function resetOTPForm() {

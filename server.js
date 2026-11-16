@@ -273,8 +273,10 @@ app.post('/api/auth/admin-login', (req, res) => {
 
     const cleanIdentifier = login.trim();
     const adminUser = db.prepare(`
-      SELECT * FROM users WHERE (phone = ? OR email = ?) AND role = 'ADMIN'
-    `).get(cleanIdentifier, cleanIdentifier);
+      SELECT * FROM users 
+      WHERE (phone = ? OR email = ? OR LOWER(phone) = LOWER(?) OR LOWER(email) = LOWER(?)) 
+        AND role = 'ADMIN'
+    `).get(cleanIdentifier, cleanIdentifier, cleanIdentifier, cleanIdentifier);
 
     if (!adminUser || !adminUser.password_hash) {
       return res.status(401).json({ success: false, message: 'Invalid admin credentials.' });
@@ -1286,6 +1288,6 @@ app.listen(PORT, () => {
   console.log(`  KP CYBER Service Provider Portal`);
   console.log(`  Integrated with YouPI-PG (Sovereign UPI Gateway)`);
   console.log(`  Server listening on http://localhost:${PORT}`);
-  console.log(`  Admin Mobile: 9876543210 | Password: admin123`);
+  console.log(`  Admin Portal: Secured Access Only`);
   console.log(`=======================================================`);
 });
