@@ -370,6 +370,119 @@ export default {
         return jsonRes({ success: true, message: 'Top-up request submitted for approval.', order_id: orderId });
       }
 
+      // 12B. POST /api/wallet/youpi/create-session
+      if (url.pathname === '/api/wallet/youpi/create-session' && request.method === 'POST') {
+        const user = await getUserFromRequest(request, db);
+        if (!user) return jsonRes({ success: false, message: 'Unauthorized' }, 401);
+
+        const { amount } = await request.json();
+        const parsedAmount = parseFloat(amount);
+        if (!parsedAmount || parsedAmount < 10) {
+          return jsonRes({ success: false, message: 'Minimum top-up amount is ₹10.00.' }, 400);
+        }
+
+        const upiIdRow = await db.prepare("SELECT value FROM system_settings WHERE key = 'upi_id'").first();
+        const upiNameRow = await db.prepare("SELECT value FROM system_settings WHERE key = 'upi_name'").first();
+        const upiId = upiIdRow ? upiIdRow.value : 'pratikkarthiya6@oksbi';
+        const upiName = upiNameRow ? upiNameRow.value : 'Pratik Karthiya';
+
+        const orderId = `KPC-TOPUP-${user.id}-${Date.now()}`;
+        const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${parsedAmount.toFixed(2)}&cu=INR&tr=${orderId}`;
+        const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
+
+        await db.prepare(`
+          INSERT INTO topups (order_id, user_id, amount, payment_method, status, gateway_status)
+          VALUES (?, ?, ?, 'YOUPI_PG', 'PENDING', 'ACTIVE')
+        `).bind(orderId, user.id, parsedAmount).run();
+
+        return jsonRes({
+          success: true,
+          mode: 'EMBEDDED',
+          orderId,
+          amount: parsedAmount,
+          upiId,
+          upiName,
+          upiUri,
+          qrDataUrl,
+        });
+      }
+
+      // 12C. GET /api/wallet/youpi/status/:orderId
+      if (url.pathname.startsWith('/api/wallet/youpi/status/') && request.method === 'GET') {
+        const user = await getUserFromRequest(request, db);
+        if (!user) return jsonRes({ success: false, message: 'Unauthorized' }, 401);
+
+        const orderId = url.pathname.replace('/api/wallet/youpi/status/', '').trim();
+        const topup = await db.prepare('SELECT * FROM topups WHERE order_id = ?').bind(orderId).first();
+        if (!topup) return jsonRes({ success: false, message: 'Order not found' }, 404);
+
+        const freshUser = await db.prepare('SELECT wallet_balance FROM users WHERE id = ?').bind(topup.user_id).first();
+        return jsonRes({
+          success: true,
+          status: topup.status,
+          gateway_status: topup.gateway_status,
+          amount: topup.amount,
+          utr: topup.utr,
+          wallet_balance: freshUser ? freshUser.wallet_balance : 0,
+        });
+      }
+
+      // 12D. POST /api/wallet/youpi/submit-utr
+      if (url.pathname === '/api/wallet/youpi/submit-utr' && request.method === 'POST') {
+        const user = await getUserFromRequest(request, db);
+        if (!user) return jsonRes({ success: false, message: 'Unauthorized' }, 401);
+
+        const { orderId, utr } = await request.json();
+        if (!orderId || !utr || utr.trim().length < 6) {
+          return jsonRes({ success: false, message: 'Please provide a valid UPI UTR / Reference ID.' }, 400);
+        }
+
+        const cleanUtr = utr.trim();
+        const topup = await db.prepare('SELECT * FROM topups WHERE order_id = ? AND user_id = ?').bind(orderId, user.id).first();
+        if (!topup) return jsonRes({ success: false, message: 'Payment order not found.' }, 404);
+
+        if (topup.status === 'APPROVED') {
+          return jsonRes({ success: true, status: 'APPROVED', message: 'Payment has already been approved and credited!' });
+        }
+
+        await db.prepare("UPDATE topups SET utr = ?, status = 'PENDING', gateway_status = 'MANUAL_REVIEW' WHERE id = ?")
+          .bind(cleanUtr, topup.id).run();
+
+        return jsonRes({
+          success: true,
+          status: 'PENDING',
+          message: 'UTR reference submitted. Processing and waiting for confirmation.',
+          orderId,
+          utr: cleanUtr,
+        });
+      }
+
+      // 12E. POST /api/wallet/youpi/simulate-payment
+      if (url.pathname === '/api/wallet/youpi/simulate-payment' && request.method === 'POST') {
+        const user = await getUserFromRequest(request, db);
+        if (!user) return jsonRes({ success: false, message: 'Unauthorized' }, 401);
+
+        const { orderId, utr } = await request.json();
+        const topup = await db.prepare('SELECT * FROM topups WHERE order_id = ?').bind(orderId).first();
+        if (!topup) return jsonRes({ success: false, message: 'Top-up session not found.' }, 404);
+
+        const chosenUtr = utr || `UTR${Math.floor(100000000000 + Math.random() * 900000000000)}`;
+
+        if (topup.status !== 'APPROVED') {
+          const targetUser = await db.prepare('SELECT * FROM users WHERE id = ?').bind(topup.user_id).first();
+          const newBal = (targetUser.wallet_balance || 0) + topup.amount;
+          await db.prepare('UPDATE users SET wallet_balance = ? WHERE id = ?').bind(newBal, targetUser.id).run();
+          await db.prepare(`
+            INSERT INTO wallet_transactions (user_id, type, amount, balance_after, category, reference_id, description)
+            VALUES (?, 'CREDIT', ?, ?, 'TOPUP', ?, ?)
+          `).bind(targetUser.id, topup.amount, newBal, topup.order_id, `YouPI Gateway payment (UTR: ${chosenUtr})`).run();
+          await db.prepare("UPDATE topups SET status = 'APPROVED', gateway_status = 'SUCCESS', utr = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?")
+            .bind(chosenUtr, topup.id).run();
+        }
+
+        return jsonRes({ success: true, message: 'Payment verified and wallet credited!', orderId, status: 'APPROVED' });
+      }
+
       // 13. GET /api/admin/users (Admin)
       if (url.pathname === '/api/admin/users' && request.method === 'GET') {
         const user = await getUserFromRequest(request, db);

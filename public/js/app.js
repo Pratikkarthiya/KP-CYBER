@@ -860,7 +860,30 @@ async function initiateYouPiPayment() {
       },
       body: JSON.stringify({ amount: STATE.selectedTopupAmount })
     });
-    const data = await res.json();
+    
+    let data;
+    if (res.status === 404) {
+      // Fallback: Generate dynamic QR directly from active system settings
+      const amount = STATE.selectedTopupAmount || 100;
+      const upiId = (STATE.settings && STATE.settings.upi_id) || 'pratikkarthiya6@oksbi';
+      const upiName = (STATE.settings && STATE.settings.upi_name) || 'Pratik Karthiya';
+      const orderId = `KPC-TOPUP-${(STATE.user && STATE.user.id) || '1'}-${Date.now()}`;
+      const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${parseFloat(amount).toFixed(2)}&cu=INR&tr=${orderId}`;
+      const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
+
+      data = {
+        success: true,
+        mode: 'EMBEDDED',
+        orderId,
+        amount: parseFloat(amount),
+        upiId,
+        upiName,
+        upiUri,
+        qrDataUrl
+      };
+    } else {
+      data = await res.json();
+    }
 
     if (data.success) {
       STATE.currentYoupiOrder = data;
@@ -940,7 +963,7 @@ async function submitYouPiUtrClaim() {
   }
 
   try {
-    const res = await fetch('/api/wallet/youpi/submit-utr', {
+    let res = await fetch('/api/wallet/youpi/submit-utr', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -951,7 +974,23 @@ async function submitYouPiUtrClaim() {
         utr: utr
       })
     });
-    const data = await res.json();
+    let data;
+    if (res.status === 404) {
+      res = await fetch('/api/wallet/topup-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${STATE.token}`
+        },
+        body: JSON.stringify({
+          amount: STATE.currentYoupiOrder.amount,
+          utr: utr
+        })
+      });
+      data = await res.json();
+    } else {
+      data = await res.json();
+    }
     if (data.success) {
       showToast(data.message, 'success');
       if (data.status === 'APPROVED') {
