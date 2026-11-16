@@ -136,6 +136,52 @@ function updateNavbarState() {
     if (rateEl) rateEl.innerText = `₹${(STATE.user.rate || 50).toFixed(2)}`;
     document.getElementById('nav-rate-badge').classList.remove('hidden');
   }
+
+  // Update mobile bottom nav label
+  const mobileLabel = document.getElementById('mobile-nav-auth-label');
+  if (mobileLabel) {
+    mobileLabel.innerText = STATE.user ? (STATE.user.role === 'ADMIN' ? 'Admin' : 'Logout') : 'Login';
+  }
+}
+
+// Mobile Bottom Navigation Helpers
+function navigateToSection(target) {
+  if (target === 'home') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (target === 'submit') {
+    if (!STATE.token) {
+      openAuthModal('user');
+    } else if (STATE.user && STATE.user.role === 'ADMIN') {
+      showAdminView();
+    } else {
+      showUserView();
+      switchUserTab('submit');
+      const el = document.getElementById('view-user');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  } else if (target === 'submissions') {
+    if (!STATE.token) {
+      openAuthModal('user');
+    } else if (STATE.user && STATE.user.role === 'ADMIN') {
+      showAdminView();
+      switchAdminTab('submissions');
+    } else {
+      showUserView();
+      switchUserTab('submissions');
+      const el = document.getElementById('view-user');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+}
+
+function handleMobileAuthClick() {
+  if (STATE.token) {
+    if (confirm('Are you sure you want to log out?')) {
+      handleLogout();
+    }
+  } else {
+    openAuthModal('user');
+  }
 }
 
 // ==============================================================

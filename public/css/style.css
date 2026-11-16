@@ -132,3 +132,96 @@ body {
     color: black !important;
   }
 }
+
+/* =================================================== */
+/* Mobile-First Responsive & Native App-Like Styles    */
+/* =================================================== */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch feedback for mobile */
+button:active, a:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+@media (max-width: 640px) {
+  /* Prevent browser auto-zooming into inputs on mobile */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Comfortable touch targets */
+  button {
+    min-height: 42px;
+  }
+
+  /* Bottom sheet modal styling for mobile */
+  .modal-wrapper {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .modal-wrapper > div {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 1.5rem !important;
+    border-top-right-radius: 1.5rem !important;
+    max-height: 92vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1.25rem 1rem !important;
+    overscroll-behavior: contain;
+  }
+
+  /* Sheet drag handle indicator */
+  .mobile-sheet-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 9999px;
+    margin: 0 auto 0.75rem auto;
+  }
+
+  /* Smooth table scrolling */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* Fixed bottom bar on mobile for quick actions */
+  .mobile-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    background: rgba(11, 15, 25, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Safe padding for bottom bar */
+  main {
+    padding-bottom: 5.5rem !important;
+  }
+}
+
+@media (min-width: 641px) {
+  .mobile-sheet-handle {
+    display: none !important;
+  }
+  .mobile-bottom-bar {
+    display: none !important;
+  }
+}

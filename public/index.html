@@ -2,7 +2,10 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f19">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>KP CYBER | Digital Service Provider Portal</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -843,18 +846,19 @@
   <!-- ============================================================== -->
   <!-- MODAL: AUTHENTICATION (USER OTP & ADMIN LOGIN)                 -->
   <!-- ============================================================== -->
-  <div id="modal-auth" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+  <div id="modal-auth" class="modal-wrapper hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+      <div class="mobile-sheet-handle"></div>
       <!-- Close button -->
       <button onclick="closeModal('modal-auth')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
-      <!-- Auth Tabs: Customer OTP vs Admin -->
+      <!-- Auth Tabs: Customer vs Admin -->
       <div class="flex border-b border-slate-800 space-x-4">
         <button id="auth-tab-btn-user" onclick="switchAuthTab('user')" class="pb-2.5 text-indigo-400 border-b-2 border-indigo-500 font-bold text-sm flex items-center space-x-1.5">
           <i data-lucide="smartphone" class="w-4 h-4"></i>
-          <span>User Login (Mobile OTP)</span>
+          <span>User Login</span>
         </button>
         <button id="auth-tab-btn-admin" onclick="switchAuthTab('admin')" class="pb-2.5 text-slate-400 hover:text-slate-200 font-bold text-sm flex items-center space-x-1.5">
           <i data-lucide="shield-check" class="w-4 h-4"></i>
@@ -916,8 +920,9 @@
   <!-- ============================================================== -->
   <!-- MODAL: WALLET TOP-UP & UPI QR CODE                             -->
   <!-- ============================================================== -->
-  <div id="modal-topup" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-lg p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl max-h-[90vh] overflow-y-auto">
+  <div id="modal-topup" class="modal-wrapper hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg p-5 sm:p-8 rounded-3xl space-y-5 relative border border-slate-700 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="mobile-sheet-handle"></div>
       <button onclick="closeModal('modal-topup')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
@@ -1069,30 +1074,19 @@
 
           <button type="submit" id="btn-submit-topup" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2">
             <i data-lucide="check-circle" class="w-4 h-4"></i>
-            <span>Submit Manual Top-Up Verification</span>
+            <span>Submit Top-Up Verification Request</span>
           </button>
         </form>
       </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Payment Screenshot (Optional)</label>
-          <input type="file" id="topup-screenshot" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700">
-        </div>
-
-        <button type="submit" id="btn-submit-topup" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2">
-          <i data-lucide="check-circle" class="w-4 h-4"></i>
-          <span>Submit Top-Up Verification Request</span>
-        </button>
-      </form>
     </div>
   </div>
 
   <!-- ============================================================== -->
   <!-- MODAL: ADMIN APPROVE USER & SET CUSTOM RATE                    -->
   <!-- ============================================================== -->
-  <div id="modal-admin-approve" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+  <div id="modal-admin-approve" class="modal-wrapper hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md p-5 sm:p-8 rounded-3xl space-y-5 relative border border-slate-700 shadow-2xl">
+      <div class="mobile-sheet-handle"></div>
       <button onclick="closeModal('modal-admin-approve')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
@@ -1159,8 +1153,9 @@
   <!-- ============================================================== -->
   <!-- MODAL: ADMIN MANUAL WALLET ADJUST (CREDIT/DEBIT)               -->
   <!-- ============================================================== -->
-  <div id="modal-admin-wallet-adjust" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+  <div id="modal-admin-wallet-adjust" class="modal-wrapper hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md p-5 sm:p-8 rounded-3xl space-y-5 relative border border-slate-700 shadow-2xl">
+      <div class="mobile-sheet-handle"></div>
       <button onclick="closeModal('modal-admin-wallet-adjust')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
@@ -1210,8 +1205,9 @@
   <!-- ============================================================== -->
   <!-- MODAL: ADMIN UPDATE SUBMISSION STATUS                          -->
   <!-- ============================================================== -->
-  <div id="modal-admin-submission-update" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-lg p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+  <div id="modal-admin-submission-update" class="modal-wrapper hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg p-5 sm:p-8 rounded-3xl space-y-5 relative border border-slate-700 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="mobile-sheet-handle"></div>
       <button onclick="closeModal('modal-admin-submission-update')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
@@ -1279,8 +1275,9 @@
   <!-- ============================================================== -->
   <!-- MODAL: PRINTABLE APPLICATION RECEIPT                           -->
   <!-- ============================================================== -->
-  <div id="modal-receipt" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-lg p-6 sm:p-8 rounded-3xl space-y-6 relative border border-slate-700 shadow-2xl">
+  <div id="modal-receipt" class="modal-wrapper hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg p-5 sm:p-8 rounded-3xl space-y-5 relative border border-slate-700 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="mobile-sheet-handle"></div>
       <button onclick="closeModal('modal-receipt')" class="absolute right-5 top-5 text-slate-400 hover:text-white">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
@@ -1340,9 +1337,35 @@
   </div>
 
   <!-- Toast Notification Container -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+  <div id="toast-container" class="fixed bottom-20 sm:bottom-5 right-4 sm:right-5 left-4 sm:left-auto z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Fixed Mobile Bottom Navigation Bar (Visible on mobile screens) -->
+  <div id="mobile-nav-bar" class="mobile-bottom-bar sm:hidden">
+    <button type="button" onclick="navigateToSection('home')" class="flex flex-col items-center justify-center text-slate-400 hover:text-indigo-400 py-1 transition-colors">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5 font-medium">Home</span>
+    </button>
+    <button type="button" onclick="navigateToSection('submit')" class="flex flex-col items-center justify-center text-slate-400 hover:text-indigo-400 py-1 transition-colors">
+      <i data-lucide="file-plus" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5 font-medium">New Form</span>
+    </button>
+    <button type="button" onclick="openTopupModal()" class="flex flex-col items-center justify-center text-emerald-400 hover:text-emerald-300 py-1 transition-colors">
+      <div class="w-9 h-9 rounded-full bg-emerald-600/30 border border-emerald-500/50 flex items-center justify-center -mt-3 shadow-lg shadow-emerald-600/30">
+        <i data-lucide="plus" class="w-5 h-5 text-emerald-300"></i>
+      </div>
+      <span class="text-[10px] mt-0.5 font-bold">Top Up</span>
+    </button>
+    <button type="button" onclick="navigateToSection('submissions')" class="flex flex-col items-center justify-center text-slate-400 hover:text-indigo-400 py-1 transition-colors">
+      <i data-lucide="clock" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5 font-medium">History</span>
+    </button>
+    <button type="button" onclick="handleMobileAuthClick()" id="mobile-nav-auth-btn" class="flex flex-col items-center justify-center text-slate-400 hover:text-indigo-400 py-1 transition-colors">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-[10px] mt-0.5 font-medium" id="mobile-nav-auth-label">Login</span>
+    </button>
+  </div>
 
   <!-- App Script -->
-  <script src="/js/app.js?v=2.0.3"></script>
+  <script src="/js/app.js?v=2.0.4"></script>
 </body>
 </html>
