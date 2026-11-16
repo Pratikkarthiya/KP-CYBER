@@ -407,9 +407,38 @@ export default {
         return jsonRes({ success: true, message: 'Settings saved' });
       }
 
-      // Fallback: serve static assets from ./public
+      // Static frontend assets handler
       if (env.ASSETS) {
-        return env.ASSETS.fetch(request);
+        try {
+          const assetRes = await env.ASSETS.fetch(request);
+          if (assetRes.status !== 404) return assetRes;
+        } catch (e) {}
+      }
+
+      // Live frontend fallback directly from repository
+      const rawBase = 'https://raw.githubusercontent.com/Pratikkarthiya/KP-CYBER/main/public';
+      let assetPath = url.pathname;
+      if (assetPath === '/' || assetPath === '') assetPath = '/index.html';
+
+      const fileUrl = `${rawBase}${assetPath}`;
+      const ghRes = await fetch(fileUrl);
+      if (ghRes.ok) {
+        let contentType = 'text/plain';
+        if (assetPath.endsWith('.html')) contentType = 'text/html; charset=utf-8';
+        else if (assetPath.endsWith('.css')) contentType = 'text/css; charset=utf-8';
+        else if (assetPath.endsWith('.js')) contentType = 'application/javascript; charset=utf-8';
+        else if (assetPath.endsWith('.png')) contentType = 'image/png';
+        else if (assetPath.endsWith('.svg')) contentType = 'image/svg+xml';
+        else if (assetPath.endsWith('.json')) contentType = 'application/json';
+
+        return new Response(ghRes.body, {
+          status: 200,
+          headers: {
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=60',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
       }
 
       return new Response('Not Found', { status: 404 });
