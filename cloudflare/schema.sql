@@ -1,6 +1,3 @@
--- Cloudflare D1 Database Schema for KP Cyber
--- To apply: npx wrangler d1 execute kp-cyber-db --file=cloudflare/schema.sql
-
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   phone TEXT UNIQUE NOT NULL,
@@ -79,7 +76,6 @@ CREATE TABLE IF NOT EXISTS system_settings (
   value TEXT
 );
 
--- Default settings
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('default_rate', '50.00');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('upi_id', 'pratikkarthiya6@oksbi');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('upi_name', 'Pratik Karthiya');
@@ -91,6 +87,5 @@ INSERT OR IGNORE INTO system_settings (key, value) VALUES ('youpi_merchant_api_k
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('youpi_webhook_secret', 'yp_whsec_kpcyber_2026');
 INSERT OR IGNORE INTO system_settings (key, value) VALUES ('sms_provider', 'SIMULATOR');
 
--- Seed Admin
 INSERT OR IGNORE INTO users (id, phone, name, email, password_hash, role, status, rate, wallet_balance, approved_at)
 VALUES (1, 'pratikarthiya6', 'Pratik Karthiya', 'pratikarthiya6@gmail.com', '$2b$10$sjBLoCYQerH1NS7mtu8K2.skiLBnUJ.mzeSXPcOmHeGfoySPRQyN6', 'ADMIN', 'APPROVED', 0, 99999, CURRENT_TIMESTAMP);
